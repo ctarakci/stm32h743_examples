@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Cortex Debug (OpenOCD)",
+            "cwd": "${workspaceFolder}",
+            "executable": "./build/00_GPIO_IN_OUT.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "runToEntryPoint": "main",
+            "device": "STM32H743",
+            "configFiles": [
+                "interface/jlink.cfg",
+                "target/stm32h7x.cfg"
+            ]
+        }
+    ]
+}
