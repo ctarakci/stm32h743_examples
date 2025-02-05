@@ -59,8 +59,12 @@ static void MPU_Config(void);
 /* USER CODE BEGIN 0 */
 
 #define TIMER_PERIOD_CNT    1
-
+#define PWM_DUTY_COEFF      2400
 volatile uint32_t timer_counter = 0;
+volatile uint8_t pwm_duty_counter = 0;
+volatile uint16_t pwm_duty = 0;
+volatile int8_t pwm_duty_flag = 0;
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -71,6 +75,31 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         
         if(timer_counter == TIMER_PERIOD_CNT)
         {
+            if(pwm_duty_counter == 0)
+            {
+                pwm_duty = 0;
+                pwm_duty_flag = 1;
+            }
+            else
+            {
+                if (pwm_duty_counter == 9)
+                {
+                    pwm_duty_flag = -1;
+                }
+                pwm_duty = PWM_DUTY_COEFF * pwm_duty_counter - 1;
+            }
+
+            if(pwm_duty_flag > 0)
+            {
+                pwm_duty_counter++;
+            }
+            else if(pwm_duty_flag < 0)
+            {
+                pwm_duty_counter--;;
+            }
+            
+            __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_2, pwm_duty);
+
             timer_counter = 0;
             HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
         }
@@ -112,8 +141,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM1_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim1);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 
   /* USER CODE END 2 */
 
